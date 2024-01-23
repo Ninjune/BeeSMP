@@ -19,12 +19,25 @@ public class CommandGive extends BeeSMPCommand
     @Override
     public boolean execute(CommandSender commandSender, Command command, String s, String[] strings)
     {
-        if(!(commandSender instanceof Player player) || strings.length < 2)
+        if(!(commandSender instanceof Player sender) || strings.length < 2)
             return false;
+        Player player = sender;
+        if(strings.length > 2)
+            for(Player p : Bukkit.getOnlinePlayers())
+                if(p.getName().equalsIgnoreCase(strings[2]))
+                    player = p;
+
         for(BeeSMPItem item : getCustomItems())
         {
             if(strings[1].toLowerCase().equals(item.getID()))
+            {
+                if(strings.length > 3)
+                    item.setAmount(Integer.valueOf(strings[3]));
+                else
+                    item.setAmount(1);
+
                 player.getInventory().addItem(item);
+            }
         }
         return true;
     }

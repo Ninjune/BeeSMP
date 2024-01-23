@@ -29,8 +29,8 @@ public class ItemManager implements Listener
     {
         customItems.add(new TalismanHealth());
         customItems.add(new TalismanVeinmine());
-        customItems.add(new DevilsMark());
 
+        customItems.add(new DevilsMark());
         customItems.add(new EnderPearlCrossbow());
         customItems.add(new PufferfishCannon());
 
