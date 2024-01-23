@@ -1,5 +1,9 @@
 package dev.ninjune.beesmp.items.talisman;
 
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.entity.Player;
+
 public class TalismanDragonEgg extends Talisman
 {
     @Override
@@ -25,7 +29,7 @@ public class TalismanDragonEgg extends Talisman
     {
         for(Player player : Bukkit.getOnlinePlayers())
         {
-            if(!(player.getInventory.contains(getMaterial(), 1)))
+            if(!(player.getInventory().contains(getMaterial(), 1)))
                 continue;
 
         }

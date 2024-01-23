@@ -1,13 +1,10 @@
 package dev.ninjune.beesmp.commands;
 
 import dev.ninjune.beesmp.items.BeeSMPItem;
-import net.minecraft.nbt.CompoundTag;
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.craftbukkit.v1_20_R2.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +29,7 @@ public class CommandGive extends BeeSMPCommand
             if(strings[1].toLowerCase().equals(item.getID()))
             {
                 if(strings.length > 3)
-                    item.setAmount(Integer.valueOf(strings[3]));
+                    item.setAmount(Integer.parseInt(strings[3]));
                 else
                     item.setAmount(1);
 

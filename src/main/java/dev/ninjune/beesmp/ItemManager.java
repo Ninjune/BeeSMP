@@ -4,6 +4,7 @@ import dev.ninjune.beesmp.items.*;
 import dev.ninjune.beesmp.items.talisman.Talisman;
 import dev.ninjune.beesmp.items.DevilsMark;
 import dev.ninjune.beesmp.items.talisman.TalismanHealth;
+import dev.ninjune.beesmp.items.talisman.TalismanSpeed;
 import dev.ninjune.beesmp.items.talisman.TalismanVeinmine;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -29,6 +30,7 @@ public class ItemManager implements Listener
     {
         customItems.add(new TalismanHealth());
         customItems.add(new TalismanVeinmine());
+        customItems.add(new TalismanSpeed());
 
         customItems.add(new DevilsMark());
         customItems.add(new EnderPearlCrossbow());
