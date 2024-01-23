@@ -1,0 +1,9 @@
+main: "dev.ninjune.beesmp.BeeSMP"
+version: "1.0.0"
+name: "BeeSMP"
+api-version: "1.20"
+
+commands:
+ bsmp:
+   description: Bsmp main command.
+   permission: beesmp.bsmp
