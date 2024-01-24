@@ -6,6 +6,8 @@ import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class TalismanVeinmine extends Talisman
@@ -46,5 +48,13 @@ public class TalismanVeinmine extends Talisman
     public Material getMaterial()
     {
         return Material.IRON_INGOT;
+    }
+
+    @Override
+    public List<String> getTalismanLore()
+    {
+        ArrayList<String> lore = new ArrayList<>();
+        lore.add("§bWill grant veinmining when you are shifting.");
+        return lore;
     }
 }

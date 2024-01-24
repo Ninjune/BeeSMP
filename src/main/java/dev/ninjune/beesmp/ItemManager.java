@@ -1,11 +1,8 @@
 package dev.ninjune.beesmp;
 
 import dev.ninjune.beesmp.items.*;
-import dev.ninjune.beesmp.items.talisman.Talisman;
+import dev.ninjune.beesmp.items.talisman.*;
 import dev.ninjune.beesmp.items.DevilsMark;
-import dev.ninjune.beesmp.items.talisman.TalismanHealth;
-import dev.ninjune.beesmp.items.talisman.TalismanSpeed;
-import dev.ninjune.beesmp.items.talisman.TalismanVeinmine;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import org.bukkit.Bukkit;
@@ -14,13 +11,12 @@ import org.bukkit.craftbukkit.v1_20_R2.inventory.CraftItemStack;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.PrepareAnvilEvent;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class ItemManager implements Listener
 {
@@ -31,10 +27,12 @@ public class ItemManager implements Listener
         customItems.add(new TalismanHealth());
         customItems.add(new TalismanVeinmine());
         customItems.add(new TalismanSpeed());
+        customItems.add(new TalismanDragonEgg());
 
         customItems.add(new DevilsMark());
         customItems.add(new EnderPearlCrossbow());
         customItems.add(new PufferfishCannon());
+        customItems.add(new Multitool());
 
         Bukkit.getScheduler().scheduleSyncRepeatingTask(BeeSMP.getPlugin(BeeSMP.class), () -> {
             for (BeeSMPItem customItem : customItems)
@@ -71,7 +69,7 @@ public class ItemManager implements Listener
     {
         if(findCustomItem(item) == null)
             return false;
-        return findCustomItem(item).getID().equalsIgnoreCase(customItemID);
+        return Objects.requireNonNull(findCustomItem(item)).getID().equalsIgnoreCase(customItemID);
     }
 
     public static void setNBT(ItemStack item, String id, String value)
@@ -90,6 +88,11 @@ public class ItemManager implements Listener
         CompoundTag itemCompound = (nmsItem.hasTag()) ? nmsItem.getTag() : new CompoundTag();
         assert itemCompound != null;
         return itemCompound.get(id) == null ? null : itemCompound.getString(id);
+    }
+
+    public static UUID getUUID(ItemStack item)
+    {
+        return UUID.fromString(Objects.requireNonNull(ItemManager.getNBT(item, "uuid")));
     }
 
     @EventHandler
@@ -113,7 +116,26 @@ public class ItemManager implements Listener
     @EventHandler
     public void onPlace(BlockPlaceEvent event)
     {
-        if(isCustomItem(event.getItemInHand()))
+        if(isCustomItem(event.getItemInHand()) &&
+            !findCustomItem(event.getItemInHand()).isPlacable())
             event.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onAnvil (PrepareAnvilEvent e)
+    {
+        customItems.forEach(customItem -> {
+            e.getInventory().forEach(anvilItem -> {
+                if(isCustomItem(anvilItem, customItem.getID()))
+                    customItem.useAnvil(e);
+            });
+        });
+    }
+
+    public static void disable()
+    {
+        customItems.forEach(customItem -> {
+            customItem.onDisable();
+        });
     }
 }

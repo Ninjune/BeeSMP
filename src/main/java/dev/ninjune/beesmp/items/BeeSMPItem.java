@@ -4,11 +4,14 @@ import net.minecraft.nbt.CompoundTag;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_20_R2.inventory.CraftItemStack;
 import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.PrepareAnvilEvent;
+import org.bukkit.inventory.AnvilInventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public abstract class BeeSMPItem extends ItemStack implements Listener
 {
@@ -21,6 +24,7 @@ public abstract class BeeSMPItem extends ItemStack implements Listener
         CompoundTag itemCompound = (nmsItem.hasTag()) ? nmsItem.getTag() : new CompoundTag();
         assert itemCompound != null;
         itemCompound.putString("id", this.getID());
+        itemCompound.putString("uuid", UUID.randomUUID().toString());
         nmsItem.setTag(itemCompound);
         this.setItemMeta(CraftItemStack.getItemMeta(nmsItem));
 
@@ -35,5 +39,8 @@ public abstract class BeeSMPItem extends ItemStack implements Listener
     public abstract String getName();
     public abstract String getID();
     public abstract Material getMaterial();
+    public boolean isPlacable() { return false; }
     public List<String> getLore() { return new ArrayList<String>(); }
+    public void useAnvil (PrepareAnvilEvent event) {}
+    public void onDisable () {};
 }

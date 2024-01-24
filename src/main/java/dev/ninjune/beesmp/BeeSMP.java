@@ -3,10 +3,12 @@ package dev.ninjune.beesmp;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.nio.file.Path;
 import java.util.Objects;
 
 public class BeeSMP extends JavaPlugin
 {
+    public static final Path DATA_FOLDER = Path.of("./plugins/BeeSMP/").toAbsolutePath();
     public FileConfiguration config = this.getConfig();
 
     @Override
@@ -30,5 +32,6 @@ public class BeeSMP extends JavaPlugin
 
     @Override
     public void onDisable() {
+        ItemManager.disable();
     }
 }

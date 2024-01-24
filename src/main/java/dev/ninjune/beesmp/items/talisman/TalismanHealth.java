@@ -28,7 +28,7 @@ public class TalismanHealth extends Talisman
     @Override
     public Material getMaterial() { return Material.RED_DYE; }
 
-    public List<String> getLore() { return new ArrayList<String>(){{add("§bGrants 2 hearts.");}}; }
+    public List<String> getTalismanLore() { return new ArrayList<String>(){{add("§bGrants 2 hearts.");}}; }
 
     @Override
     public void runEverySecond()
