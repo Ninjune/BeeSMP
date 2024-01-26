@@ -1,6 +1,6 @@
 package dev.ninjune.beesmp.items;
 
-import dev.ninjune.beesmp.ItemManager;
+import dev.ninjune.beesmp.managers.ItemManager;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
@@ -8,6 +8,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.Recipe;
+import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -51,6 +53,20 @@ public class DevilsMark extends BeeSMPItem
         return lore;
     }
 
+    @Override
+    public List<Recipe> getRecipes()
+    {
+        ShapedRecipe recipe = new ShapedRecipe(getRecipeNamespace(), this.clone());
+        recipe.shape("r*r","|b|",".s.");
+        recipe.setIngredient('r', Material.REDSTONE);
+        recipe.setIngredient('*', Material.NETHER_STAR);
+        recipe.setIngredient('|', Material.ECHO_SHARD);
+        recipe.setIngredient('b', Material.BOOK);
+        //recipe.setIngredient('.', Material.AIR);
+        recipe.setIngredient('s', Material.SOUL_SAND);
+        return List.of(recipe);
+    }
+
     @EventHandler
     public void onInteract(PlayerInteractEvent e)
     {
@@ -68,7 +84,7 @@ public class DevilsMark extends BeeSMPItem
 
         String boundPlayer = ItemManager.getNBT(e.getItem(), "bound");
         boolean changeLore = false;
-        if(boundPlayer != null && !boundPlayer.equals("#blank")) // bound
+        if(!boundPlayer.isEmpty() && !boundPlayer.equals("#blank")) // bound
         {
             boolean found = false;
 

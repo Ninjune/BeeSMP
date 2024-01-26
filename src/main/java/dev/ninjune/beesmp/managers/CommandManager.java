@@ -1,12 +1,11 @@
-package dev.ninjune.beesmp;
+package dev.ninjune.beesmp.managers;
 
-import dev.ninjune.beesmp.commands.BeeSMPCommand;
-import dev.ninjune.beesmp.commands.CommandEndtoggle;
-import dev.ninjune.beesmp.commands.CommandGive;
+import dev.ninjune.beesmp.commands.*;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -22,8 +21,10 @@ public class CommandManager
 
     static
     {
-        registerCommand(new CommandEndtoggle());
+        registerCommand(CommandToggle.getInstance());
         registerCommand(new CommandGive());
+        registerCommand(new CommandInfo());
+        registerCommand(new CommandPlaytime());
     }
 
     public static void registerCommand(BeeSMPCommand command)
@@ -35,18 +36,24 @@ public class CommandManager
     public static class CommandManagerExecutor implements CommandExecutor
     {
         @Override
-        public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings)
+        public boolean onCommand(@NotNull CommandSender commandSender,
+                                 @NotNull Command command,
+                                 @NotNull String s,
+                                 String[] strings
+        )
         {
             if(strings[0] != null)
             {
                 for(BeeSMPCommand c : commands)
                 {
-                    if(Objects.equals(c.getAliases()[0], strings[0]))
+                    if(Objects.equals(c.getAliases()[0], strings[0]) &&
+                            (c.getPermission() == null || commandSender.hasPermission(c.getPermission()))
+                    )
                         return c.execute(commandSender, command, s, strings);
                 }
             }
 
-            commandSender.sendMessage("Failed to find command!");
+            commandSender.sendMessage("Failed to find command or there was an error running that command!");
             return false;
         }
     }
@@ -54,21 +61,29 @@ public class CommandManager
     public static class CommandManagerTabComplete implements TabCompleter
     {
         @Override
-        public List<String> onTabComplete(CommandSender commandSender, Command command, String s, String[] strings)
+        public List<String> onTabComplete(@NotNull CommandSender commandSender,
+                                          @NotNull Command command,
+                                          @NotNull String s,
+                                          String[] strings
+        )
         {
             ArrayList<String> values = new ArrayList<>();
             if(strings.length < 1)
                 return null;
 
             for(BeeSMPCommand c : commands)
+            {
+                if(!(c.getPermission() == null || commandSender.hasPermission(c.getPermission())))
+                    continue;
                 for(String alias : c.getAliases())
                 {
+
                     if(!Objects.equals(alias, strings[0]) && alias.startsWith(strings[0]))
                         values.add(alias);
                     else if(Objects.equals(alias, strings[0]) && c.tabComplete(strings) != null)
                         values.addAll(c.tabComplete(strings));
                 }
-
+            }
 
             return values;
         }

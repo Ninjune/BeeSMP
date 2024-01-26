@@ -8,8 +8,9 @@ import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
-import static dev.ninjune.beesmp.ItemManager.getCustomItems;
+import static dev.ninjune.beesmp.managers.ItemManager.getCustomItems;
 
 public class CommandGive extends BeeSMPCommand
 {
@@ -33,7 +34,10 @@ public class CommandGive extends BeeSMPCommand
                 else
                     item.setAmount(1);
 
-                player.getInventory().addItem(item);
+                if(strings.length > 4)
+                    item.setWorldBound(Objects.equals(strings[4], "true"));
+
+                player.getInventory().addItem(item.clone());
             }
         }
         return true;
@@ -49,14 +53,37 @@ public class CommandGive extends BeeSMPCommand
     public List<String> tabComplete(String[] strings)
     {
         ArrayList<String> values = new ArrayList<>();
-        if(strings.length < 2)
-            return values;
 
-        for(BeeSMPItem item : getCustomItems())
+        if(strings.length == 2)
         {
-            if (item.getID().startsWith(strings[1].toLowerCase()))
-                values.add(item.getID());
+            for(BeeSMPItem item : getCustomItems())
+            {
+                if (item.getID().startsWith(strings[1].toLowerCase()))
+                    values.add(item.getID());
+            }
         }
+        else if(strings.length == 3)
+        {
+            for(Player player : Bukkit.getOnlinePlayers())
+                if(player.getName().toLowerCase().startsWith(strings[2].toLowerCase()))
+                    values.add(player.getName());
+        }
+        else if(strings.length == 4)
+        {
+            if(strings[3].isEmpty())
+                values.add("<amount>");
+        }
+        else if(strings.length == 5)
+        {
+            if(strings[4].isEmpty())
+                values.add("<worldBound = true>");
+            else
+            {
+                values.add("true");
+                values.add("false");
+            }
+        }
+
 
         return values;
     }

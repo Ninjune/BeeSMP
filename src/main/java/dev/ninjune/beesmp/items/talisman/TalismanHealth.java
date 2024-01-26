@@ -1,15 +1,14 @@
 package dev.ninjune.beesmp.items.talisman;
 
-import dev.ninjune.beesmp.ItemManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class TalismanHealth extends Talisman
 {
@@ -34,16 +33,15 @@ public class TalismanHealth extends Talisman
     public void runEverySecond()
     {
         Collection<? extends Player> players = Bukkit.getOnlinePlayers();
-        AtomicBoolean found = new AtomicBoolean(false);
 
         for(Player player : players)
         {
-            player.getInventory().forEach(item -> {
-                if(ItemManager.isCustomItem(item, "talisman_health"))
-                    found.set(true);
-            });
+            boolean found = false;
+            for(ItemStack item : player.getInventory())
+                if(isThis(item))
+                    found = true;
 
-            if(found.get())
+            if(found)
                 player.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(24);
             else
                 player.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(20);

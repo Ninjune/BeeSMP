@@ -1,22 +1,26 @@
-package dev.ninjune.beesmp;
+package dev.ninjune.beesmp.managers;
 
+import dev.ninjune.beesmp.BeeSMP;
 import dev.ninjune.beesmp.items.*;
 import dev.ninjune.beesmp.items.talisman.*;
 import dev.ninjune.beesmp.items.DevilsMark;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.craftbukkit.v1_20_R2.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_20_R2.inventory.CraftItemStack;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.PrepareAnvilEvent;
-import org.bukkit.event.inventory.PrepareItemCraftEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.inventory.CraftingRecipe;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.Damageable;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class ItemManager implements Listener
 {
@@ -38,7 +42,7 @@ public class ItemManager implements Listener
             for (BeeSMPItem customItem : customItems)
                 if (customItem instanceof Talisman)
                     ((Talisman) customItem).runEverySecond();
-        }, 200, 20);
+        }, 0, 20);
     }
 
     public static HashSet<BeeSMPItem> getCustomItems()
@@ -51,8 +55,6 @@ public class ItemManager implements Listener
         for(BeeSMPItem customItem : customItems)
         {
             String id = getNBT(item, "id");
-            if(id == null)
-                continue;
             if (Objects.equals(id, customItem.getID()))
                 return customItem;
         }
@@ -82,60 +84,55 @@ public class ItemManager implements Listener
         item.setItemMeta(CraftItemStack.getItemMeta(nmsItem));
     }
 
+    public static void damageWithUnbreaking(ItemStack item)
+    {
+        ItemMeta meta = item.getItemMeta();
+        Integer unbreakingLevel = item.getEnchantments().get(Enchantment.DURABILITY);
+        if(unbreakingLevel == null)
+            unbreakingLevel = 0;
+        if(meta instanceof Damageable dmgable &&
+                ThreadLocalRandom.current().nextInt() % (1+unbreakingLevel) == 0
+        )
+        {
+            dmgable.setDamage(dmgable.getDamage()+1);
+            item.setItemMeta(dmgable);
+        }
+
+    }
+
+    @NotNull
     public static String getNBT(ItemStack item, String id)
     {
         net.minecraft.world.item.ItemStack nmsItem = CraftItemStack.asNMSCopy(item);
         CompoundTag itemCompound = (nmsItem.hasTag()) ? nmsItem.getTag() : new CompoundTag();
         assert itemCompound != null;
-        return itemCompound.get(id) == null ? null : itemCompound.getString(id);
+        return itemCompound.get(id) == null ? "" : itemCompound.getString(id);
     }
 
     public static UUID getUUID(ItemStack item)
     {
-        return UUID.fromString(Objects.requireNonNull(ItemManager.getNBT(item, "uuid")));
+        return UUID.fromString(ItemManager.getNBT(item, "uuid"));
     }
 
     @EventHandler
-    public void onPrepareCraft(PrepareItemCraftEvent event)
+    public void onJoin(PlayerJoinEvent e)
     {
-        List<ItemStack> matrix = Arrays.stream(event.getInventory().getMatrix()).toList();
-        for(BeeSMPItem customItem : customItems)
-        {
-            for(ItemStack item : matrix)
-            {
-                net.minecraft.world.item.ItemStack nmsItem = CraftItemStack.asNMSCopy(item);
-                CompoundTag itemCompound = (nmsItem.hasTag()) ? nmsItem.getTag() : new CompoundTag();
-                assert itemCompound != null;
-                if(itemCompound.get("id") == null || !Objects.equals(itemCompound.getString("id"), customItem.getID()))
-                    continue;
-                event.getInventory().setResult(new ItemStack(Material.AIR));
-            }
-        }
-    }
-
-    @EventHandler
-    public void onPlace(BlockPlaceEvent event)
-    {
-        if(isCustomItem(event.getItemInHand()) &&
-            !findCustomItem(event.getItemInHand()).isPlacable())
-            event.setCancelled(true);
-    }
-
-    @EventHandler
-    public void onAnvil (PrepareAnvilEvent e)
-    {
+        // no invicibility for u bitch
+        ((CraftPlayer) e.getPlayer()).getHandle().spawnInvulnerableTime = 0;
         customItems.forEach(customItem -> {
-            e.getInventory().forEach(anvilItem -> {
-                if(isCustomItem(anvilItem, customItem.getID()))
-                    customItem.useAnvil(e);
+            HashSet<NamespacedKey> discoverables = new HashSet<>();
+
+            customItem.getRecipes().forEach(recipe -> {
+                if(recipe instanceof CraftingRecipe craftingRecipe)
+                    discoverables.add(craftingRecipe.getKey());
             });
+
+            e.getPlayer().discoverRecipes(discoverables);
         });
     }
 
     public static void disable()
     {
-        customItems.forEach(customItem -> {
-            customItem.onDisable();
-        });
+        customItems.forEach(BeeSMPItem::onDisable);
     }
 }

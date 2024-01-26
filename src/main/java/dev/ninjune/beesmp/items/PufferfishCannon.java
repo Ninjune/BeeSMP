@@ -1,7 +1,7 @@
 package dev.ninjune.beesmp.items;
 
 import dev.ninjune.beesmp.BeeSMP;
-import dev.ninjune.beesmp.ItemManager;
+import dev.ninjune.beesmp.managers.ItemManager;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -12,12 +12,16 @@ import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_20_R2.entity.CraftEntity;
 import org.bukkit.craftbukkit.v1_20_R2.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_20_R2.entity.CraftPufferFish;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.server.PluginDisableEvent;
+import org.bukkit.inventory.Recipe;
+import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.util.Vector;
@@ -49,10 +53,30 @@ public class PufferfishCannon extends BeeSMPItem
     @Override
     public Material getMaterial()
     {
-        return Material.STICK;
+        return Material.GOLDEN_HOE;
     }
 
-    private class CannonPufferfish extends Pufferfish
+    @Override
+    public List<Recipe> getRecipes()
+    {
+        ShapedRecipe recipe = new ShapedRecipe(getRecipeNamespace(), this.clone());
+        recipe.shape("pds", ",sc", "..d");
+        recipe.setIngredient('p', Material.PUFFERFISH_BUCKET);
+        recipe.setIngredient('d', Material.DIAMOND);
+        recipe.setIngredient('s', Material.SPONGE);
+        recipe.setIngredient(',', Material.PRISMARINE);
+        recipe.setIngredient('c', Material.CROSSBOW);
+
+        return List.of(recipe);
+    }
+
+    @Override
+    public List<Enchantment> getApplicableEnchants()
+    {
+        return List.of(Enchantment.DURABILITY, Enchantment.MENDING);
+    }
+
+    private static class CannonPufferfish extends Pufferfish
     {
         public CannonPufferfish(EntityType<? extends Pufferfish> entitytypes, Level world)
         {
@@ -67,7 +91,6 @@ public class PufferfishCannon extends BeeSMPItem
             setAirSupply(999);
             super.tick();
         }
-
     }
 
     @EventHandler
@@ -98,7 +121,6 @@ public class PufferfishCannon extends BeeSMPItem
             activePufferfish.remove(playerUUID);
         }
 
-
         Vector velocity = getVelocityFromAngles(e.getPlayer().getLocation().getYaw(), e.getPlayer().getLocation().getPitch(), VELOCITY_MULTIPLIER);
 
         CraftPlayer craftPlayer = (CraftPlayer) e.getPlayer();
@@ -124,6 +146,7 @@ public class PufferfishCannon extends BeeSMPItem
 
         serverPlayer.level().getMinecraftWorld().addFreshEntity(mcPufferfish);
         activePufferfish.put(craftPlayer.getUniqueId(), pufferfish);
+        ItemManager.damageWithUnbreaking(e.getItem());
     }
 
     @EventHandler
@@ -135,6 +158,13 @@ public class PufferfishCannon extends BeeSMPItem
                 if(metadataValue.asBoolean())
                     event.getDrops().clear();
         });
+    }
+
+    @EventHandler
+    public void onBreak(BlockBreakEvent e)
+    {
+        if(isThis(e.getPlayer().getItemInUse()))
+            e.setCancelled(true);
     }
 
     @EventHandler

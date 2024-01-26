@@ -1,25 +1,19 @@
 package dev.ninjune.beesmp.items.talisman;
 
-import dev.ninjune.beesmp.ItemManager;
+import dev.ninjune.beesmp.managers.ItemManager;
 import dev.ninjune.beesmp.items.BeeSMPItem;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.*;
 
 public abstract class Talisman extends BeeSMPItem
 {
@@ -29,7 +23,6 @@ public abstract class Talisman extends BeeSMPItem
     {
         HashSet<ImmutablePair<Player, ItemStack>> retValue = new HashSet<>();
         Collection<? extends Player> players = Bukkit.getOnlinePlayers();
-        AtomicBoolean found = new AtomicBoolean(false);
 
         for(Player player : players)
         {
@@ -42,7 +35,7 @@ public abstract class Talisman extends BeeSMPItem
         return retValue;
     }
 
-    protected List<String> getTalismanLore() { return new ArrayList<>(); };
+    protected List<String> getTalismanLore() { return new ArrayList<>(); }
 
     @Override
     public final List<String> getLore()
@@ -52,7 +45,7 @@ public abstract class Talisman extends BeeSMPItem
         return val;
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler
     public void onInventoryClick(InventoryClickEvent e)
     {
         InventoryType type = e.getInventory().getType();
@@ -62,7 +55,7 @@ public abstract class Talisman extends BeeSMPItem
             item = e.getWhoClicked().getInventory().getItem(e.getHotbarButton());
 
         if(item == null ||
-            !isTalisman(item) ||
+            !isThis(item) ||
             !(type == InventoryType.ENDER_CHEST || type == InventoryType.SHULKER_BOX)
         )
             return;
@@ -73,12 +66,7 @@ public abstract class Talisman extends BeeSMPItem
     @EventHandler
     public void onHopperMove(InventoryMoveItemEvent e)
     {
-        if(isTalisman(e.getItem()))
+        if(isThis(e.getItem()))
             e.setCancelled(true);
-    }
-
-    private Boolean isTalisman(ItemStack item)
-    {
-        return ItemManager.isCustomItem(item) && (ItemManager.findCustomItem(item) instanceof Talisman);
     }
 }

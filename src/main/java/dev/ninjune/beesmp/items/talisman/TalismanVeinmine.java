@@ -1,6 +1,6 @@
 package dev.ninjune.beesmp.items.talisman;
 
-import dev.ninjune.beesmp.ItemManager;
+import dev.ninjune.beesmp.managers.ItemManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;

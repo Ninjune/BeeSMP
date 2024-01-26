@@ -1,7 +1,7 @@
 package dev.ninjune.beesmp.items;
 
 import dev.ninjune.beesmp.BeeSMP;
-import dev.ninjune.beesmp.ItemManager;
+import dev.ninjune.beesmp.managers.ItemManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.EnderPearl;
@@ -24,7 +24,7 @@ public class EnderPearlCrossbow extends BeeSMPItem
 
     public EnderPearlCrossbow()
     {
-        Bukkit.getScheduler().scheduleSyncRepeatingTask(BeeSMP.getPlugin(BeeSMP.class), () -> {
+        BeeSMP.runEveryTick(() -> {
             Bukkit.getOnlinePlayers().forEach(player -> {
                 Inventory inventory = player.getInventory();
                 for(ItemStack item : inventory)
@@ -50,7 +50,7 @@ public class EnderPearlCrossbow extends BeeSMPItem
                     consumed.add(player.getName());
                 }
             });
-        }, 20, 1);
+        });
     }
 
     @Override
