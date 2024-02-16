@@ -7,7 +7,6 @@ import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import javax.annotation.concurrent.Immutable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -35,7 +34,7 @@ public class TalismanSpeed extends Talisman
     }
 
     @Override
-    public List<String> getTalismanLore() { return new ArrayList<String>(){{add("§bGrants 20% more speed.");}}; }
+    public List<String> getTalismanLore() { return new ArrayList<>(){{add("§bGrants 20% more speed.");}}; }
 
     @Override
     public void runEverySecond()

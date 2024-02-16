@@ -4,6 +4,7 @@ import dev.ninjune.beesmp.BeeSMP;
 import dev.ninjune.beesmp.managers.ItemManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EnderPearl;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -12,10 +13,15 @@ import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.Recipe;
+import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.meta.CrossbowMeta;
+import org.bukkit.inventory.recipe.CraftingBookCategory;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
 
 public class EnderPearlCrossbow extends BeeSMPItem
 {
@@ -24,33 +30,31 @@ public class EnderPearlCrossbow extends BeeSMPItem
 
     public EnderPearlCrossbow()
     {
-        BeeSMP.runEveryTick(() -> {
-            Bukkit.getOnlinePlayers().forEach(player -> {
-                Inventory inventory = player.getInventory();
-                for(ItemStack item : inventory)
+        BeeSMP.runEveryTick(() -> Bukkit.getOnlinePlayers().forEach(player -> {
+            Inventory inventory = player.getInventory();
+            for(ItemStack item : inventory)
+            {
+                if(!ItemManager.isCustomItem(item, "ender_pearl_crossbow") ||
+                        !((CrossbowMeta) Objects.requireNonNull(item.getItemMeta())).hasChargedProjectiles())
+                    continue;
+                if(!drawing.contains(player.getName()) || consumed.contains(player.getName()))
+                    continue;
+
+                int consume = 2;
+                HashMap<Integer, ? extends ItemStack> epearls = player.getInventory().all(Material.ENDER_PEARL);
+                for(ItemStack pearl : epearls.values())
                 {
-                    if(!ItemManager.isCustomItem(item, "ender_pearl_crossbow") ||
-                            !((CrossbowMeta) item.getItemMeta()).hasChargedProjectiles())
-                        continue;
-                    if(!drawing.contains(player.getName()) || consumed.contains(player.getName()))
-                        continue;
-
-                    int consume = 2;
-                    HashMap<Integer, ? extends ItemStack> epearls = player.getInventory().all(Material.ENDER_PEARL);
-                    for(ItemStack pearl : epearls.values())
+                    while(consume > 0 && pearl.getAmount() > 0)
                     {
-                        while(consume > 0 && pearl.getAmount() > 0)
-                        {
-                            pearl.setAmount(pearl.getAmount() - 1);
-                            consume--;
-                        }
+                        pearl.setAmount(pearl.getAmount() - 1);
+                        consume--;
                     }
-
-                    drawing.remove(player.getName());
-                    consumed.add(player.getName());
                 }
-            });
-        });
+
+                drawing.remove(player.getName());
+                consumed.add(player.getName());
+            }
+        }));
     }
 
     @Override
@@ -71,26 +75,48 @@ public class EnderPearlCrossbow extends BeeSMPItem
         return Material.CROSSBOW;
     }
 
+    @Override
+    public List<String> getLore()
+    {
+        return List.of("§8§oConsumes 2 epearls", "§bSends an ender pearl on a further trajectory.");
+    }
+
+    @Override
+    public List<Enchantment> getApplicableEnchants()
+    {
+        return List.of(Enchantment.QUICK_CHARGE);
+    }
+
+    @Override
+    public List<Recipe> getRecipes()
+    {
+        ShapedRecipe recipe = genRecipe()
+                .shape("doo","oc.","o.e")
+                .setIngredient('e', Material.ENDER_EYE)
+                .setIngredient('c', Material.CROSSBOW)
+                .setIngredient('d', Material.DIAMOND)
+                .setIngredient('o', Material.OBSIDIAN);
+        recipe.setCategory(CraftingBookCategory.EQUIPMENT);
+        return List.of(recipe);
+    }
+
     @EventHandler
     public void onInteract(PlayerInteractEvent e) {
         //On interact
-        if(e.getItem() == null)
+        if(!isThis(e.getItem()))
             return;
-        if(ItemManager.isCustomItem(e.getItem(), "ender_pearl_crossbow"))
+        if(e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK)
         {
-            if(e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK)
-            {
-                if(drawing.contains(e.getPlayer().getName()) ||
-                        ((CrossbowMeta) e.getItem().getItemMeta()).hasChargedProjectiles()
-                )
-                    return;
-                boolean hasTwoPearls = e.getPlayer().getInventory().containsAtLeast(new ItemStack(Material.ENDER_PEARL), 2);
+            if(drawing.contains(e.getPlayer().getName()) ||
+                    ((CrossbowMeta) Objects.requireNonNull(Objects.requireNonNull(e.getItem()).getItemMeta())).hasChargedProjectiles()
+            )
+                return;
+            boolean hasTwoPearls = e.getPlayer().getInventory().containsAtLeast(new ItemStack(Material.ENDER_PEARL), 2);
 
-                if(!hasTwoPearls)
-                    e.setCancelled(true);
-                else
-                    drawing.add(e.getPlayer().getName());
-            }
+            if(!hasTwoPearls)
+                e.setCancelled(true);
+            else
+                drawing.add(e.getPlayer().getName());
         }
     }
 
@@ -102,9 +128,8 @@ public class EnderPearlCrossbow extends BeeSMPItem
         if(!consumed.contains(player.getName()))
             return;
         ItemStack item = event.getBow();
-        assert item != null;
 
-        if (ItemManager.isCustomItem(item, "ender_pearl_crossbow"))
+        if (isThis(item))
         {
             event.setCancelled(true);
             consumed.remove(player.getName());

@@ -22,6 +22,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.server.PluginDisableEvent;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapedRecipe;
+import org.bukkit.inventory.recipe.CraftingBookCategory;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.util.Vector;
@@ -66,6 +67,7 @@ public class PufferfishCannon extends BeeSMPItem
         recipe.setIngredient('s', Material.SPONGE);
         recipe.setIngredient(',', Material.PRISMARINE);
         recipe.setIngredient('c', Material.CROSSBOW);
+        recipe.setCategory(CraftingBookCategory.EQUIPMENT);
 
         return List.of(recipe);
     }

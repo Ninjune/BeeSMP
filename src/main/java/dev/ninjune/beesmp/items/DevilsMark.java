@@ -17,7 +17,6 @@ import org.bukkit.potion.PotionEffectType;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 public class DevilsMark extends BeeSMPItem
 {
@@ -147,8 +146,8 @@ public class DevilsMark extends BeeSMPItem
     @Nullable
     public static Entity getNearestEntityInSight(Player player, int range) {
         ArrayList<Entity> entities = (ArrayList<Entity>) player.getNearbyEntities(range, range, range);
-        ArrayList<Block> sightBlock = (ArrayList<Block>) player.getLineOfSight( (Set<Material>) null, range);
-        ArrayList<Location> sight = new ArrayList<Location>();
+        ArrayList<Block> sightBlock = (ArrayList<Block>) player.getLineOfSight(null, range);
+        ArrayList<Location> sight = new ArrayList<>();
 
         for (Block block : sightBlock)
             sight.add(block.getLocation());

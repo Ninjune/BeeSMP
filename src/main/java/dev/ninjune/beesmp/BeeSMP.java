@@ -21,6 +21,7 @@ public class BeeSMP extends JavaPlugin
     public void onEnable() {
         getLogger().info("Hello world!");
         initShutdownListeners.add(CommandToggle.getInstance());
+        initShutdownListeners.add(ItemManager.getInstance());
 
         initShutdownListeners.forEach(InitShutdownListener::onEnable);
 
@@ -28,23 +29,17 @@ public class BeeSMP extends JavaPlugin
         Objects.requireNonNull(this.getCommand("bsmp")).setTabCompleter(CommandManager.tabCompletor);
 
         ObjectiveManager.init();
-        getServer().getPluginManager().registerEvents(new ItemManager(), this);
-        ItemManager.getCustomItems().forEach(item -> {
-            getServer().getPluginManager().registerEvents(item.getEvents(), this);
-        });
-        CommandManager.getCommands().forEach(command -> {
-            getServer().getPluginManager().registerEvents(command, this);
-        });
+        getServer().getPluginManager().registerEvents(ItemManager.getInstance(), this);
+        ItemManager.getCustomItems().forEach(item -> getServer().getPluginManager().registerEvents(item.getEvents(), this));
+        ItemManager.getCustomItems().forEach(item -> getServer().getPluginManager().registerEvents(item, this)); // temporary
+        CommandManager.getCommands().forEach(command -> getServer().getPluginManager().registerEvents(command, this));
 
-        Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> {
-            tickRunners.forEach(Runnable::run);
-        }, 0, 1);
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> tickRunners.forEach(Runnable::run), 0, 1);
     }
 
     @Override
     public void onDisable() {
         initShutdownListeners.forEach(InitShutdownListener::onDisable);
-        ItemManager.disable();
     }
 
     public static void runEveryTick(Runnable runnable)

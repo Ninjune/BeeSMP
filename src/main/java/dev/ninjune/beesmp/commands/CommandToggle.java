@@ -30,9 +30,7 @@ public class CommandToggle extends BeeSMPCommand implements InitShutdownListener
         BeeSMP.runEveryTick(() -> {
             if(toggleables.get("elytra"))
                 return;
-            Bukkit.getOnlinePlayers().forEach(player -> {
-                player.getInventory().remove(Material.ELYTRA);
-            });
+            Bukkit.getOnlinePlayers().forEach(player -> player.getInventory().remove(Material.ELYTRA));
         });
     }
 

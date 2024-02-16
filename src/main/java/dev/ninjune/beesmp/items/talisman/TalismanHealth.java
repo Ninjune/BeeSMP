@@ -9,6 +9,7 @@ import org.bukkit.inventory.ItemStack;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 public class TalismanHealth extends Talisman
 {
@@ -27,7 +28,7 @@ public class TalismanHealth extends Talisman
     @Override
     public Material getMaterial() { return Material.RED_DYE; }
 
-    public List<String> getTalismanLore() { return new ArrayList<String>(){{add("§bGrants 2 hearts.");}}; }
+    public List<String> getTalismanLore() { return new ArrayList<>(){{add("§bGrants 2 hearts.");}}; }
 
     @Override
     public void runEverySecond()
@@ -42,9 +43,9 @@ public class TalismanHealth extends Talisman
                     found = true;
 
             if(found)
-                player.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(24);
+                Objects.requireNonNull(player.getAttribute(Attribute.GENERIC_MAX_HEALTH)).setBaseValue(24);
             else
-                player.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(20);
+                Objects.requireNonNull(player.getAttribute(Attribute.GENERIC_MAX_HEALTH)).setBaseValue(20);
         }
     }
 }

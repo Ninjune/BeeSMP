@@ -17,12 +17,10 @@ public class ObjectiveManager
         objectives.put("playtime", null);
         objectives.put("deaths", null);
 
-        scoreboard.getObjectives().forEach(objective -> {
-            objectives.keySet().forEach(key -> {
-                if(objective.getName().equalsIgnoreCase(key))
-                    objectives.put(key, objective);
-            });
-        });
+        scoreboard.getObjectives().forEach(objective -> objectives.keySet().forEach(key -> {
+            if(objective.getName().equalsIgnoreCase(key))
+                objectives.put(key, objective);
+        }));
 
         objectives.keySet().forEach(key -> {
             if(objectives.get(key) == null)
@@ -36,12 +34,11 @@ public class ObjectiveManager
 
         objectives.get("deaths").setDisplaySlot(DisplaySlot.PLAYER_LIST);
 
-        Bukkit.getScheduler().scheduleSyncRepeatingTask(BeeSMP.getPlugin(BeeSMP.class), () -> {
-            Bukkit.getOnlinePlayers().forEach(player -> {
-                Score score = objectives.get("playtime").getScore(player.getName());
-                score.setScore(score.getScore()+1);
-            });
-        }, 0, 20);
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(BeeSMP.getPlugin(BeeSMP.class), () ->
+                Bukkit.getOnlinePlayers().forEach(player -> {
+            Score score = objectives.get("playtime").getScore(player.getName());
+            score.setScore(score.getScore()+1);
+        }), 0, 20);
     }
 
     public static HashMap<String, Objective> getObjectives()

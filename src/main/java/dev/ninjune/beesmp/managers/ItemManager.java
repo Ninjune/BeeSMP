@@ -4,12 +4,14 @@ import dev.ninjune.beesmp.BeeSMP;
 import dev.ninjune.beesmp.items.*;
 import dev.ninjune.beesmp.items.talisman.*;
 import dev.ninjune.beesmp.items.DevilsMark;
+import dev.ninjune.beesmp.util.InitShutdownListener;
 import net.minecraft.nbt.CompoundTag;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.craftbukkit.v1_20_R2.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_20_R2.inventory.CraftItemStack;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -22,11 +24,12 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
-public class ItemManager implements Listener
+public class ItemManager implements Listener, InitShutdownListener
 {
     private static final HashSet<BeeSMPItem> customItems = new HashSet<>();
+    private static final ItemManager instance = new ItemManager();
 
-    static
+    ItemManager()
     {
         customItems.add(new TalismanHealth());
         customItems.add(new TalismanVeinmine());
@@ -37,12 +40,18 @@ public class ItemManager implements Listener
         customItems.add(new EnderPearlCrossbow());
         customItems.add(new PufferfishCannon());
         customItems.add(new Multitool());
-
+        customItems.add(new Blowgun());
+        Bukkit.getOnlinePlayers().forEach(ItemManager::discoverAllCustomRecipes);
         Bukkit.getScheduler().scheduleSyncRepeatingTask(BeeSMP.getPlugin(BeeSMP.class), () -> {
             for (BeeSMPItem customItem : customItems)
                 if (customItem instanceof Talisman)
                     ((Talisman) customItem).runEverySecond();
         }, 0, 20);
+    }
+
+    public static ItemManager getInstance()
+    {
+        return instance;
     }
 
     public static HashSet<BeeSMPItem> getCustomItems()
@@ -52,6 +61,8 @@ public class ItemManager implements Listener
 
     public static BeeSMPItem findCustomItem(ItemStack item)
     {
+        if(item == null)
+            return null;
         for(BeeSMPItem customItem : customItems)
         {
             String id = getNBT(item, "id");
@@ -94,6 +105,8 @@ public class ItemManager implements Listener
                 ThreadLocalRandom.current().nextInt() % (1+unbreakingLevel) == 0
         )
         {
+            if(dmgable.getDamage() > item.getType().getMaxDurability())
+                item.setAmount(0);
             dmgable.setDamage(dmgable.getDamage()+1);
             item.setItemMeta(dmgable);
         }
@@ -119,6 +132,11 @@ public class ItemManager implements Listener
     {
         // no invicibility for u bitch
         ((CraftPlayer) e.getPlayer()).getHandle().spawnInvulnerableTime = 0;
+        discoverAllCustomRecipes(e.getPlayer());
+    }
+
+    public static void discoverAllCustomRecipes(Player player)
+    {
         customItems.forEach(customItem -> {
             HashSet<NamespacedKey> discoverables = new HashSet<>();
 
@@ -127,11 +145,18 @@ public class ItemManager implements Listener
                     discoverables.add(craftingRecipe.getKey());
             });
 
-            e.getPlayer().discoverRecipes(discoverables);
+            player.discoverRecipes(discoverables);
         });
     }
 
-    public static void disable()
+    @Override
+    public void onEnable()
+    {
+
+    }
+
+    @Override
+    public void onDisable()
     {
         customItems.forEach(BeeSMPItem::onDisable);
     }

@@ -18,13 +18,15 @@ import org.bukkit.event.inventory.PrepareAnvilEvent;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
+import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
-public abstract class BeeSMPItem extends ItemStack implements Cloneable
+// TODO: listener should be removed from items
+public abstract class BeeSMPItem extends ItemStack implements Cloneable, Listener
 {
     private final ItemEvents events = new ItemEvents();
 
@@ -64,12 +66,12 @@ public abstract class BeeSMPItem extends ItemStack implements Cloneable
      * @param id id of the value you wish to retrieve.
      * @return NBT value.
      */
-    public String getNBT(String id)
+    public final String getNBT(String id)
     {
         return ItemManager.getNBT(this, id);
     }
 
-    public ItemEvents getEvents()
+    public final ItemEvents getEvents()
     {
         return events;
     }
@@ -80,7 +82,7 @@ public abstract class BeeSMPItem extends ItemStack implements Cloneable
      * @return Whether or not the item should be teleported and saved on death.
      */
     @NotNull
-    public Boolean isWorldBound()
+    public final Boolean isWorldBound()
     {
         return Objects.equals(getNBT("worldBound"), "true");
     }
@@ -90,23 +92,23 @@ public abstract class BeeSMPItem extends ItemStack implements Cloneable
      * @param item The item to compare with
      * @return Whether or not the items are the same.
      */
-    protected Boolean isThis(ItemStack item)
+    protected final Boolean isThis(ItemStack item)
     {
         return ItemManager.isCustomItem(item, getID());
     }
 
-    public void setWorldBound(boolean worldBound) { setNBT("worldBound", worldBound ? "true" : "false"); }
+    public final void setWorldBound(boolean worldBound) { setNBT("worldBound", worldBound ? "true" : "false"); }
     /**
      * Sets a (string) NBT of this/child item.
      * @param id id of the value you wish to change
      * @param value String value
      */
-    protected void setNBT(String id, String value)
+    protected final void setNBT(String id, String value)
     {
         ItemManager.setNBT(this, id, value);
     }
 
-    public void useAnvil (PrepareAnvilEvent event) {}
+    protected void useAnvil (PrepareAnvilEvent event) {}
 
     public void onDisable () {}
 
@@ -122,6 +124,11 @@ public abstract class BeeSMPItem extends ItemStack implements Cloneable
         return (BeeSMPItem) super.clone();
     }
 
+    protected ShapedRecipe genRecipe()
+    {
+        return new ShapedRecipe(getRecipeNamespace(), this.clone());
+    }
+
     public class ItemEvents implements Listener
     {
         private ItemEvents() {}
@@ -129,7 +136,7 @@ public abstract class BeeSMPItem extends ItemStack implements Cloneable
         @EventHandler
         public void onEnchantmentTable(EnchantItemEvent e)
         {
-            if(getApplicableEnchants().isEmpty())
+            if(!isThis(e.getItem()) || getApplicableEnchants().isEmpty())
                 return;
             Map<Enchantment, Integer> map = e.getEnchantsToAdd();
             final Map<Enchantment, Integer> iterableMap = new HashMap<>(map);

@@ -95,6 +95,7 @@ public class Multitool extends BeeSMPItem
         if(preferredTool.getItemMeta() instanceof Damageable preferredToolMeta)
         {
             Damageable multitoolMeta = (Damageable) e.getItem().getItemMeta();
+            assert multitoolMeta != null;
             multitoolMeta.setDamage(preferredToolMeta.getDamage());
             e.getItem().setItemMeta(multitoolMeta);
         }
@@ -156,6 +157,7 @@ public class Multitool extends BeeSMPItem
                 if(nextItem.getItemMeta() instanceof Damageable nextItemMeta)
                 {
                     Damageable multitoolMeta = (Damageable) multitool.getItemMeta();
+                    assert multitoolMeta != null;
                     multitoolMeta.setDamage(nextItemMeta.getDamage());
                     multitool.setItemMeta(multitoolMeta);
                 }
@@ -203,9 +205,7 @@ public class Multitool extends BeeSMPItem
             {
                 queue.remove(item);
                 // run one tick later
-                Bukkit.getScheduler().runTaskLater(BeeSMP.getPlugin(BeeSMP.class), () -> {
-                    multitool.setAmount(1);
-                }, 1);
+                Bukkit.getScheduler().runTaskLater(BeeSMP.getPlugin(BeeSMP.class), () -> multitool.setAmount(1), 1);
                 break;
             }
         }
